@@ -33,7 +33,7 @@ int main()
 4. 模版函数的两种应用
    - 自动类型推导
    - 具体的类型显示调用
-   - 详细的代码解释
+   - 详细的代码解释如下
 ```cpp
 #include <iostream>
 using namespace std;
@@ -73,7 +73,7 @@ int main()
 ```
 # 3. 通过符号表深入理解函数模版
 1. 无法自动推导函数的返回值
-2. 函数返回值在第一个参数中指定, 从做向右部分指定类型参数
+2. 函数返回值在第一个参数中指定, 从左向右部分指定类型参数
 ```cpp
 #include <iostream>
 using namespace std;
@@ -210,5 +210,216 @@ int main()
 }
 ```
 
-# 7. 类模版的特化
-1. 
+# 7. 类模版的完全特化
+1. 特化分成部分特化跟完全特化
+2. 表示可以存在多个相同的类名,但是模板类型都不一致(和函数重载的参数类似)
+3. 完全特化的意义
+ - 如果您希望为特定类型提供特殊的实现，则可以使用类模板的完全特化版本。这样，您可以将代码的实现与代码的接口分离开来，并且在不同的情况下使用不同的实现。
+ - 此外，类模板的完全特化版本还可以帮助您避免不必要的代码冗余，并且可以使代码更具可读性。因此，在某些情况下，使用类模板的完全特化版本可以是一种有效的代码组织方式。
+ 3. 看一个案例了解类模版的完全特化的意义
+ ```cpp
+#include <iostream>
+
+template <typename T>
+class MyClass {
+public:
+  void print() {
+    std::cout << "This is a generic version of MyClass." << std::endl;
+  }
+};
+
+template <>
+class MyClass<int> {
+public:
+  void print() {
+    std::cout << "This is an integer-specialized version of MyClass." << std::endl;
+  }
+};
+
+int main() {
+  MyClass<double> myClass1;
+  myClass1.print();  // Output: This is a generic version of MyClass.
+
+  MyClass<int> myClass2;
+  myClass2.print();  // Output: This is an integer-specialized version of MyClass.
+
+  return 0;
+}
+```
+- **输出结果将不同，从而说明了如何使用类模板的完全特化版本来为特定类型提供特殊的实现。**
+
+4. 类模版的特化匹配
+```cpp
+// 类模版的特化
+
+// 原始模版，也叫模版的声明
+template<typename T1, typename T2>
+class Operator
+{
+public:
+    Operator()
+    {
+        cout << "Operator" << endl; 
+    }
+
+    void add(T1 a, T2 b)
+    {
+        cout << a + b << endl;
+    }
+};
+
+// 完全特化的类模版不需要指定模版类型
+template <>
+class Operator<int, int>  // 指定类型参数，因为为2个参数，和正常模版参数个数一致
+{
+/*
+原始的类模板 Operator 有两个泛型类型：T1 和 T2。因此，其创建的完全特化版本 Operator<int, int> 也必须有两个类型参数
+*/
+public:
+    Operator()
+    {
+        cout << "Operator<int int>" << endl;
+    }
+    void add(int a, int b, int c)
+    {
+        cout << a + b << endl;
+    }
+};
+
+
+
+int main()
+{       
+    // 匹配完全特化类模版
+    Operator<int, int> op1;
+
+    // 匹配正常模版
+    Operator<int, float> op2;
+    return 0;
+}
+```
+- **原始的类模板有两个泛型类型（例如 T1 和 T2），那么为其创建的完全特化版本也必须有两个类型参数，否则编译器将报错**
+- 完全特化的类模版不能使用泛指类型 T1 和 T2
+
+5. 类模版的部分特化
+- 不管是部分特化的类模版还是完全特化的类模版，如果声明的类模版有两个参数，他们都要有两个参数
+- 编译时,会根据对象定义的类模板类型,首先去匹配完全特化,再来匹配部分特化,最后匹配正常的类模板
+```cpp
+template<typename T1, typename T2> // 声明的类模版参数个数是两个
+class Operator                     // 正常的类模版
+{
+public:
+    Operator()
+    {
+        cout << "Operator" << endl;
+    }
+    void add(T1 a, T2 b)
+    {
+        cout << a + b << endl;
+    }
+};
+
+template<typename T>     // 有指定模版类型及其参数，所以是部分特化的类模版
+class Operator<T*, T*>   // 指定类型参数，必须为2个参数，和正常摩安参数个数一样
+{
+public:
+Operator()
+{
+        cout << "Operator<T*, T*>" << endl;
+}
+void add(T* a, T* b)
+{
+        cout << *a + *b << endl;
+}
+};
+
+template<typename T1, typename T2>     // 有指定模版类型及其参数，所以是部分特化的类模版
+class Operator<T1*, T2*>   // 指定类型参数，必须为2个参数，和正常摩安参数个数一样
+{
+public:
+Operator()
+{
+        cout << "Operator<T1*, T2*>" << endl;
+}
+void add(T1* a, T2* b)
+{
+        cout << *a + *b << endl;
+}
+};
+
+int main()
+{
+Operator<int*, float*> op1; // 匹配部分特化模版
+Operator<int, float> op2;   // 匹配原始模版
+Operator<int *, int *> op3; // 匹配部分特化模版
+}
+```
+# 8. 继承中类的模版使用
+1. 父类是一般类，子类是类的模版，没什么特别要注意的
+```cpp
+class A
+{
+public:
+    A(int temp): _temp(temp){}; 
+    ~A(){}
+
+private:
+    int _temp;
+};
+
+template <typename T>
+class B : public A
+{
+public:
+    B(T t = 0): A(666)
+    {
+        this->t = t;
+    }
+    ~B(){}
+
+private:
+    T t;
+};
+
+int main()
+{
+    B<int> b;
+    return 0;
+}
+```
+2. 子类是一般类，父类是模版类，继承的时候要写上类型，这就是模版的调用点
+```cpp
+template<typename T>
+class A
+{
+public:
+    A(T t=0)
+    {
+        this->t = t;
+
+    }
+
+private:
+    T t;
+};
+
+class B : public A<int>
+{
+public:
+    B(int temp = 0):A<int>(666)
+    {
+        this->temp = temp;
+    }
+
+private:
+    int temp;
+};
+
+int main()
+{
+    B b;
+    return 0;
+}
+```
+3. 父类子类都是类模版
+
