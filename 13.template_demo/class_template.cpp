@@ -1,4 +1,5 @@
 #include <iostream>
+#include <type_traits> 
 using namespace std;
 
 // 类模版的定义
@@ -207,7 +208,7 @@ int main()
 #endif
 
 // 子类父类都是类模版
-#if 1
+#if 0
 template <typename T1, typename T2>
 class A   
 {
@@ -238,5 +239,44 @@ int main()
     // 这样A，B，C中全部泛指类型都是int
     C<int> c;
     return 0;
+}
+#endif
+
+//使用模板类限制模版类型的属性和方法
+#if 1
+template <typename T>
+struct HasValue {
+  template <typename U>
+  static std::true_type test(decltype(&U::value));
+
+  template <typename U>
+  static std::false_type test(...);
+
+  static constexpr bool value = decltype(test<T>(nullptr))::value;
+};
+
+template <typename T>
+typename std::enable_if<HasValue<T>::value>::type
+printValue(T arg) {
+  std::cout << "Value: " << arg.value << std::endl;
+}
+
+struct MyStruct {
+  int value = 42;
+};
+
+struct MyOtherStruct {
+  float otherValue = 3.14f;
+  int value = 43;
+};
+
+int main() {
+  MyStruct s;
+  MyOtherStruct os;
+
+  printValue(s); // 输出：Value: 42
+
+  // 下面这行代码会在编译时出现错误，因为MyOtherStruct类型不满足HasValue的限定条件
+  printValue(os);
 }
 #endif

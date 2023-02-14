@@ -500,3 +500,41 @@ int main() {
 ```
 9. 可以解释一下模版类的实现原理?
 - 模板类是一种将数据类型抽象化和参数化的编程技术，使得同一套类定义可以适用于不同的数据类型和参数。模板类定义了一种通用的类模板，实际上并不是一个真正的类，而是一个用于生成类的蓝图。在使用时，编译器会根据特定的模板参数实例化出对应的类。
+10. 使用模板类限制模版类型的属性和方法 concept(c++ 20的新特性)
+```cpp
+template <typename T>
+struct HasValue {
+  template <typename U>
+  static std::true_type test(decltype(&U::value));
+
+  template <typename U>
+  static std::false_type test(...);
+
+  static constexpr bool value = decltype(test<T>(nullptr))::value;
+};
+
+template <typename T>
+typename std::enable_if<HasValue<T>::value>::type
+printValue(T arg) {
+  std::cout << "Value: " << arg.value << std::endl;
+}
+
+struct MyStruct {
+  int value = 42;
+};
+
+struct MyOtherStruct {
+  float otherValue = 3.14f;
+  int value = 43;
+};
+
+int main() {
+  MyStruct s;
+  MyOtherStruct os;
+
+  printValue(s); // 输出：Value: 42
+
+  // 下面这行代码会在编译时出现错误，因为MyOtherStruct类型不满足HasValue的限定条件
+  printValue(os);
+}
+```
