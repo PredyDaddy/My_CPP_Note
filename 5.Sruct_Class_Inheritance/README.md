@@ -960,5 +960,87 @@ int main()
 1. func2() 父类子类名称相同，参数不相同，父类的方法被隐藏
 2. func1() 父类子类名称相同，参数也相同，但是没有virtual，父类的方法被隐藏
 ```cpp
+// 1. func2() 父类子类名称相同，参数不相同，父类的方法被隐藏
+// 2. func1() 父类子类名称相同，参数也相同，但是没有virtual，父类的方法被隐藏
+class Father
+{
+public:
+    void func1()
+    {cout << "father func1" << endl;}
 
+    void func2(int x)
+    {cout << "father func2" << endl;}
+};
+
+class Son : public Father
+{
+public:
+    void func1()
+    {cout << "son func1" << endl;}
+
+    void func2(char x)
+    {cout << "son func2" << endl;}
+};
+
+int main()
+{
+    Father father;
+    Son son;
+    son.func1();
+    son.func2('s');
+    return 0;
+}
+```
+
+# 14. 复习类中的静态成员变量和普通成员变量的区别
+1. 访问普通类的public成员变量需要实例化对象用对象访问
+2. 静态成员变量需要用:: 作用域访问
+2. 为什么普通类的静态成员变量要在外面初始化赋值的呢？
+- 这是因为类的定义只是为创建对象而定义了一个模板，只有在程序实例化该类并创建对象时，该类中的静态成员变量才会被分配内存空间。因此，在类外部进行静态成员变量的定义，可以让程序在类实例化之前为静态成员变量分配内存空间，使其在程序运行期间能够正常使用。
+- 因此，静态成员变量的定义和初始化一般需要分为两个步骤，先在类中声明静态成员变量，再在类外部进行定义和初始化。
+# 15. 继承中的静态成员特性
+1. 重新定义一个静态成员函数，所有在基类中的其他重载函数会被隐藏
+2. 改变基类中一个函数的特征，所有使用该函数名的基类版本都会被隐藏
+3. 静态成员函数不能是虚函数（virtual function）
+```cpp
+class Base
+{
+public:
+    static int getNum() { return sNum; }
+    static int getNum(int param){
+        return sNum + param; }
+
+    public:
+        static int sNum;
+};
+int Base ::sNum = 10;
+
+class Derived : public Base
+{
+public:
+    static int sNum; // 这里的话父类同名的成员属性被隐藏
+
+    // 父类的方法同样被隐藏了
+    // 改变基类中一个函数的特征，所有使用该函数名的基类版本都会被隐藏
+    static int getNum(int param1, int param2)
+    {
+        return sNum + param1 + param2;
+    }
+};
+int Derived :: sNum = 100;
+
+int main()
+{
+        Base obj;
+        cout << obj.getNum() << endl;
+        cout << obj.getNum(1) << endl;
+        Derived obj2;
+
+        // 编译器报错，这里不会去父类找可以匹配到的，因为被隐藏了
+        // obj2.getNum();
+
+        cout << obj2.getNum(1, 2) << endl;
+        
+        return 0;
+}
 ```
