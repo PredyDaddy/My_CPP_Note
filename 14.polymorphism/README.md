@@ -221,4 +221,96 @@ private:
 
 5. 友元函数通常不具有类成员函数的继承性，即如果一个类是另一个类的友元类，那么它的派生类不一定是另一个类的友元类。
 
+6. 友元函数的声明可以放在类的私有部分，也可以放在公有部分，没区别的。
+
+7. 友元函数是没有指针的。
+
 总之，友元函数是一个强有力的工具，可以使得某些函数访问类的私有成员，但需要谨慎使用，以免破坏类的封装性和增加代码的复杂性。
+
+```cpp
+class CCar;
+class CDriver
+{
+public:
+    void ModifyCar(CCar *pCar);
+};
+
+class CCar
+{
+public:
+    CCar(int p) : price(p) {}
+    int getPrice() { return price; }
+
+private:
+    int price;
+    friend int MostExpensiveCar(CCar cars[], int total); // 声明友元
+    friend void CDriver::ModifyCar(CCar *pCar);          // 声明友元
+};
+
+void CDriver::ModifyCar(CCar *pCar) // 这里的pCar是一个指向CCar的指针
+{
+    pCar->price += 1000;
+}
+
+int MostExpensiveCar(CCar cars[], int total)
+{
+    int tmpMax = -1;
+    for (int i = 0; i < total; ++i)
+    {
+        if (cars[i].price > tmpMax)
+        {
+            tmpMax = cars[i].price;
+        }
+    }
+    return tmpMax;
+}
+
+int main()
+{
+    CCar cars[3] = {CCar(10000), CCar(15000), CCar(12000)};
+    cout << "Most Expensive Car price: " << MostExpensiveCar(cars, 3) << endl;
+
+    CDriver driver;
+    driver.ModifyCar(&cars[1]);
+    cout << "After Modification, Car price: " << cars[1].getPrice() << endl;
+    return 0;
+}
+
+```
+6. 友元类
+1. 友元类可以访问另一个类的全部成员，包括私有。
+2. 友元的关系不能被继承
+3. 友元类的关系是单向的，不具备交换性，一定要看声明
+```cpp
+class Cars;
+// class Driver;
+
+class Driver
+{
+public:
+    int PriceChange(Cars *ptr);
+};
+
+class Cars
+{
+private:
+    int price = 0;
+    friend Driver;
+    friend int Driver::PriceChange(Cars *ptr);
+};
+
+int Driver::PriceChange(Cars *ptr)
+{
+    ptr->price += 1000;
+    int temp = ptr->price;
+    return temp;
+}
+
+int main()
+{
+    Cars car;
+    Driver driver;
+    cout << driver.PriceChange(&car) << endl;
+    return 0;
+}
+```

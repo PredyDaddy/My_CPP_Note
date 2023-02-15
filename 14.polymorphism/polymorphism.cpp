@@ -1,5 +1,5 @@
 #include <iostream>
-using std::cout, std::endl;
+using namespace std;
 
 // 原版，后面用于运算符重载改造
 #if 0
@@ -190,7 +190,7 @@ private:
 };
 #endif
 // 友元函数案例
-
+#if 0
 class CCar;
 class CDriver
 {
@@ -236,5 +236,38 @@ int main()
     CDriver driver;
     driver.ModifyCar(&cars[1]);
     cout << "After Modification, Car price: " << cars[1].getPrice() << endl;
+    return 0;
+}
+
+#endif
+class Cars;
+// class Driver;
+
+class Driver
+{
+public:
+    int PriceChange(Cars *ptr);
+};
+
+class Cars
+{
+private:
+    int price = 0;
+    friend Driver;
+    friend int Driver::PriceChange(Cars *ptr);
+};
+
+int Driver::PriceChange(Cars *ptr)
+{
+    ptr->price += 1000;
+    int temp = ptr->price;
+    return temp;
+}
+
+int main()
+{
+    Cars car;
+    Driver driver;
+    cout << driver.PriceChange(&car) << endl;
     return 0;
 }
