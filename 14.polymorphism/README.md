@@ -17,4 +17,208 @@
 
 
 # 3. 运算符重载
-1. 
+1. C++ 运算符重载是一种特殊的语言特性，它允许程序员为自定义的数据类型定义与内置类型相似的运算符行为。通过运算符重载，我们可以使用与内置类型相似的语法对自定义类型进行操作，从而使代码更易读、更易理解。
+2. 运算符重载通常是通过在类或结构体中定义特殊的成员函数来实现的，这些函数使用运算符的名称作为函数名，并定义运算符的操作行为。例如，如果要为一个名为 MyClass 的类定义加法运算符 +，可以在该类中定义一个名为 operator+ 的成员函数。
+3. 改造前案例
+```cpp
+class Time
+{
+public:
+    Time();                 // 默认构造函数
+    Time(int h, int m = 0); // 带参数的构造函数
+    void AddMin(int m);     // add minues
+    void AddHr(int hr);     // add hours
+    void Reset(int h = 0, int m = 0);
+
+    // 返回的是一个Time类型的对象，传入的是一个Time类型的对象
+    // Time& t 取地址保证了不是对这个对象进行拷贝，而是直接操作
+    // Sum我们只是取里面的信息，为了保证对象不被修改，函数里面用const修饰t
+    // 外面的const保证了返回的对象不能被修改，保证进来和出去都不能被修改
+    Time Sum(const Time &t) const;
+    void show() const;
+
+private:
+    int hours;
+    int minutes;
+};
+
+// 外面实现构造函数
+Time::Time()
+{
+    hours = minutes = 0;
+}
+Time::Time(int h, int m)
+{
+    hours = h;
+    minutes = m;
+}
+
+void Time::AddMin(int m)
+{
+    minutes += m;
+    hours += m / 60;
+    minutes % 60;
+}
+
+void Time::AddHr(int h)
+{
+    hours += h;
+}
+
+void Time::Reset(int h, int m)
+{
+    hours = h;
+    minutes = m;
+}
+
+Time Time::Sum(const Time &t) const
+{
+    Time sum;
+    sum.minutes = t.minutes + minutes;
+    sum.hours = t.hours + hours;
+    sum.minutes % 60;
+    return sum;
+}
+
+void Time::show() const
+{
+    cout << hours << " hours " << minutes << " minutes " << endl;
+}
+
+main()
+{
+    Time t1(45, 10);
+    Time t2(12, 45);
+    Time total;
+    total = t1.Sum(t2);
+    total.show();
+    return 0;
+}
+```
+4. 改造后案例
+```cpp
+class Time
+{
+public:
+    Time();                 // 默认构造函数
+    Time(int h, int m = 0); // 带参数的构造函数
+    void AddMin(int m);     // add minues
+    void AddHr(int hr);     // add hours
+    void Reset(int h = 0, int m = 0);
+
+    // 返回的是一个Time类型的对象，传入的是一个Time类型的对象
+    // Time& t 取地址保证了不是对这个对象进行拷贝，而是直接操作
+    // operator+/-我们只是取里面的信息，为了保证对象不被修改，函数里面用const修饰t
+    // 外面的const保证了本来的对象(this指向的对象)不能被修改，保证进来和出去都不能被修改
+    // 总之，两个const保证了this对象和传进来的参数对象不被修改
+    Time operator+(const Time &t) const;
+    Time operator-(const Time &t) const;
+    void show() const;
+
+private:
+    int hours;
+    int minutes;
+};
+
+// 外面实现构造函数
+Time::Time()
+{
+    hours = minutes = 0;
+}
+Time::Time(int h, int m)
+{
+    hours = h;
+    minutes = m;
+}
+
+void Time::AddMin(int m)
+{
+    minutes += m;
+    hours += m / 60;
+    minutes % 60;
+}
+
+void Time::AddHr(int h)
+{
+    hours += h;
+}
+
+void Time::Reset(int h, int m)
+{
+    hours = h;
+    minutes = m;
+}
+
+Time Time::operator+(const Time &t) const
+{
+    Time sum;
+    sum.minutes = t.minutes + minutes;
+    sum.hours = t.hours + hours;
+    sum.minutes % 60;
+    return sum;
+}
+
+Time Time::operator-(const Time & t) const
+{
+    Time res;
+    res.minutes = minutes - t.minutes;
+    res.hours = hours - t.hours;
+    res.minutes % 60;
+    return res;
+}
+void Time::show() const
+{
+    cout << hours << " hours " << minutes << " minutes " << endl;
+}
+
+main()
+{
+    Time t1(45, 10);
+    Time t2(12, 45);
+    Time total;
+    Time diff;
+    total = t1 + t2;
+    diff = t1 - t2;
+    total.show();
+    diff.show();
+    return 0;
+}
+```
+4. 前置++和后置++
+1. 从代码来看，后置++在实现的时候需要构造一个临时对象，临时对象的构造和销毁都需要一定的系统资源，所以后置++的效率不如前置++
+```cpp
+class A
+{
+public:
+    A& operator++() // 前置++ 
+    {
+        ++a;
+        return *this;
+    }
+
+    A operator++(int) // 后置
+    {
+        A a = *this;
+        ++*this;
+        return a;
+    } 
+private:
+    int a;
+};
+```
+# 5. 友元函数
+在上面的案例中，我们使用了友元函数，友元函数是一个非成员函数，但可以访问一个类的私有成员。在该案例中，我们定义了两个类 CCar 和 CDriver，其中 CDriver 是 CCar 的友元类，CCar 类中声明了两个友元函数 MostExpensiveCar 和 CDriver::ModifyCar，这两个函数都可以访问 CCar 类中的私有成员 price。
+
+需要注意的是，使用友元函数可以使得一个函数访问另一个类中的私有成员，这在某些情况下非常有用，但也会破坏类的封装性。因此，需要谨慎使用友元函数，不要滥用。以下是一些需要注意的点：
+
+友元函数不是类的成员函数，它是一个全局函数或另一个类的成员函数。
+
+友元函数可以访问类的私有成员，这可能破坏类的封装性。
+
+友元函数的声明通常在类的定义中，但它的实现必须在类外。
+
+友元函数的实现中可以访问该类的所有成员，包括私有成员。
+
+友元函数通常不具有类成员函数的继承性，即如果一个类是另一个类的友元类，那么它的派生类不一定是另一个类的友元类。
+
+总之，友元函数是一个强有力的工具，可以使得某些函数访问类的私有成员，但需要谨慎使用，以免破坏类的封装性和增加代码的复杂性。
