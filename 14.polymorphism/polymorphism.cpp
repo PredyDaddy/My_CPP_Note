@@ -238,8 +238,9 @@ int main()
     cout << "After Modification, Car price: " << cars[1].getPrice() << endl;
     return 0;
 }
-
 #endif
+
+#if 0
 class Cars;
 // class Driver;
 
@@ -269,5 +270,213 @@ int main()
     Cars car;
     Driver driver;
     cout << driver.PriceChange(&car) << endl;
+    return 0;
+}
+#endif
+
+// 动态多态的案例
+#if 0
+class Shape
+{
+public:
+    virtual void draw()
+    {
+        cout << "draw shape" << endl;
+    }
+};
+
+class Circle : public Shape
+{
+public:
+    void draw()
+    {
+        cout << "draw Circle" << endl;
+    }
+};
+
+class Square : public Shape
+{
+public:
+    void draw()
+    {
+        cout << "draw Square" << endl;
+    }
+};
+
+int main()
+{
+    Shape *shape1;       // 定义一个指向父类的指针
+    shape1 = new Circle; // 指向一个Circle类型的对象
+    shape1->draw();  
+    delete shape1;  // 释放内存
+
+    Shape *shapes[2]; // 指针数组实例化多个对象
+    shapes[0] = new Circle;  // 指向一个Circle类型的对象
+    shapes[1] = new Square;  // 指向一个Square类型的对象
+    shapes[0]->draw();
+    shapes[1]->draw();    
+
+    // 释放内存，避免内存泄露的问题
+    for (int i = 0; i < 2; i++)
+    {
+        delete shapes[i];
+    }
+    return 0;
+}
+#endif
+
+// 虚函数的基本使用
+#if 0
+class Base
+{
+public:
+    virtual void func()
+    {
+        cout << "Base Function" << endl;
+    }
+
+    void func2()
+    {
+        cout << "Base func2" << endl;
+    }
+};
+
+class Deveried : public Base
+{
+public:
+    void func()
+    {
+        cout << "Derveried func" << endl;
+    }
+};
+
+int main()
+{
+    // 不用指针看不出来，本来子类就会覆盖
+    Deveried d;
+    d.func();
+
+    // 用了指针，这里是指向父类的指针
+    Base *ptr;
+    ptr = new Deveried; // 开辟内存
+    ptr->func();
+    ptr->Base::func();  // 这样才能调用父类的func()
+    ptr->func2(); // 这个指向父类的ptr就可以调用子类的func了
+    return 0;
+}
+#endif
+
+#if 0
+// 动态绑定调用案例
+class A
+{
+public:
+    virtual void vfunc1()
+    {
+        cout << "A::vfunc1" << endl;
+    }
+};
+
+class B : public A
+{
+public:
+    virtual void vfunc1() override
+    {
+        cout << "B::vfunc1" << endl;
+    }
+
+    void func1()
+    {
+        cout << "B::func1" << endl;
+    }
+
+    virtual void vfunc2()
+    {
+        cout << "B::vfunc2" << endl;
+    }
+
+    void func2()
+    {
+        cout << "B::func2" << endl;
+    }
+};
+
+int main()
+{
+    B b;
+    b.func1();
+    b.func2();
+    b.vfunc1();
+    b.vfunc2();
+
+    b.A::vfunc1();
+    return 0;
+}
+#endif
+
+// A, B, C, 哪里写Virtual
+#if 0
+class A {
+public:
+    virtual void fun() {
+        cout << "A::func" << endl;
+    }
+};
+
+class B : public A {
+public:
+    void fun() {
+        cout << "B::func" << endl;
+    }
+};
+
+class C : public B {
+public:
+    void fun() {
+        cout << "C::func" << endl;
+    }
+};
+
+int main() {
+    A *ptr;
+    ptr = new C;
+    ptr->fun();
+
+    B *ptr1;
+    ptr1 = new C;
+    ptr1->fun();
+
+    return 0;
+}
+#endif
+
+// 纯虚函数
+class Hero
+{
+public:
+    virtual void Back() = 0;
+};
+
+class Hero1 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero1 back" << endl;
+    }
+};
+
+class Hero2 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero2 back" << endl;
+    }
+};
+
+int main()
+{
+    Hero1 h1;
     return 0;
 }

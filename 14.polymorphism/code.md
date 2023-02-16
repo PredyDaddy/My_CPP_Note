@@ -1,33 +1,37 @@
 ```cpp
-class Cars;
-// class Driver;
-
-class Driver
-{
+class A {
 public:
-    int PriceChange(Cars *ptr);
+    virtual void vfunc1();
+    void func1();
 };
 
-class Cars
-{
-private:
-    int price = 0;
-    friend Driver;
-    friend int Driver::PriceChange(Cars *ptr);
+class B : public A {
+public:
+    void vfunc1() override; // 重写 A::vfunc1()
+    void func1();
+    using A::func1; // 指定 A::func1() 的作用域
+    void func2();
 };
 
-int Driver::PriceChange(Cars *ptr)
-{
-    ptr->price += 1000;
-    int temp = ptr->price;
-    return temp;
+void B::vfunc1() {
+    std::cout << "This is B::vfunc1()." << std::endl;
 }
 
-int main()
-{
-    Cars car;
-    Driver driver;
-    cout << driver.PriceChange(&car) << endl;
+void B::func1() {
+    std::cout << "This is B::func1()." << std::endl;
+}
+
+void B::func2() {
+    std::cout << "This is B::func2()." << std::endl;
+}
+
+int main() {
+    B b;
+    b.vfunc1(); // 调用 B::vfunc1()
+    b.func1(); // 调用 B::func1()
+    b.A::func1(); // 调用 A::func1()
+    b.func2(); // 调用 B::func2()
     return 0;
 }
+
 ```

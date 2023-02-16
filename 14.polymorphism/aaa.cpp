@@ -1,32 +1,35 @@
 #include <iostream>
 using namespace std;
 
-class Cars;
-class Driver
-{
+class A {
 public:
-    friend int PriceChange(Cars *ptr);
+    virtual void fun() {
+        cout << "A::func" << endl;
+    }
 };
 
-class Cars
-{
-private:
-    int price = 0;
-    friend Driver;
-    friend int PriceChange(Cars *ptr);
+class B : public A {
+public:
+    void fun() {
+        cout << "B::func" << endl;
+    }
 };
 
-int PriceChange(Cars *ptr)
-{
-    ptr->price += 1000;
-    int temp = ptr->price;
-    return temp;
+class C : public B {
+public:
+    void fun() {
+        cout << "C::func" << endl;
+    }
 };
 
-int main()
-{
-    Cars car;
-    Driver driver;
-    cout << PriceChange(&car) << endl;
+int main() {
+    A *ptr;
+    ptr = new C;
+    ptr->fun();
+
+    B *ptr1;
+    ptr1 = new C;
+    ptr1->fun();
+
     return 0;
 }
