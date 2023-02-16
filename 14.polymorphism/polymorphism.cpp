@@ -450,7 +450,8 @@ int main() {
 }
 #endif
 
-// 纯虚函数
+// 纯虚函数案例
+#if 0
 class Hero
 {
 public:
@@ -477,6 +478,172 @@ public:
 
 int main()
 {
+    // Hero h; 会报错，无法被实例化创建对象所以被叫作抽象基类，自然也无法为分配内存空间
     Hero1 h1;
+    return 0;
+}
+#endif
+
+// 抽象基类
+#if 0
+class Hero
+{
+public:
+    virtual void Back() = 0;
+};
+
+class Hero1 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero1 back" << endl;
+    }
+};
+
+class Hero2 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero2 back" << endl;
+    }
+};
+
+int main()
+{
+    // 两种调用方法
+    Hero *hptr;
+    hptr = new Hero1;
+    hptr->Back();
+
+    
+    Hero2 h2;
+    hptr = &h2;
+    hptr->Back();
+    return 0;
+}
+#endif
+
+// 抽象基类的设计问题
+#if 0
+class Shape
+{
+public:
+    // 需要子类完成的功能, 不同形状的东西面积周长的公式都不一样
+    // 无法在基类中实现
+    virtual void getArea() = 0;
+    virtual void getPermiter() = 0;
+};
+
+class Circle : public Shape
+{
+public:
+    // 不带参数的构造函数
+    Circle()
+    {
+        this->_radius = 10;
+    }
+    Circle(int radius) : _radius(radius) {}
+
+public:
+    void getArea()
+    {
+        int res = 3.14 * _radius * _radius;
+        cout << "Circle Area: " << res << endl;
+    }
+
+    void getPermiter()
+    {
+        int res = 2 * 3.14 * _radius;
+        cout << "Circle Permiter: " << res << endl;
+    }
+
+private:
+    int _radius;
+};
+
+class Square : public Shape
+{
+public:
+    Square()
+    {
+        this->_size = 10;
+    }
+
+    Square(int size) : _size(size) {}
+
+public:
+    void getArea()
+    {
+        int res = _size * _size;
+        cout << "Square Area: " << res << endl;
+    }
+    void getPermiter()
+    {
+        int res = _size * 4;
+        cout << "Square Permite: " << res << endl;
+    }
+
+private:
+    int _size;
+};
+int main()
+{
+    // 经过测试，可以实例化，抽象基类的需求完成了
+    Circle c1;
+    Circle c2(5);
+
+    Square s1;
+    Square s2(5);
+
+    // 用一个数组保存这两个圆
+    Shape *shape[4];
+    shape[0] = &c1;
+    shape[1] = &c2;
+    shape[2] = &s1;
+    shape[3] = &s2;
+
+    for (int i = 0; i < 4; i++)
+    {
+        shape[i]->getArea();
+        shape[i]->getPermiter();
+    }
+    return 0;
+}
+#endif
+
+// 虚析构函数
+class Base
+{
+public:
+    Base()
+    {
+        cout << "Base构造函数" << endl;
+    }
+    virtual ~Base()
+    {
+        cout << "Base析构函数" << endl;
+    }
+};
+
+class Derived : public Base
+{
+public:
+    Derived()
+    {
+        cout << "Derived构造函数" << endl;
+    }
+    ~Derived()
+    {
+        cout << "Derived的析构函数" << endl;
+    }
+};
+
+int main()
+{
+    Base *ptr;
+    ptr = new Derived;
+    delete ptr;
     return 0;
 }

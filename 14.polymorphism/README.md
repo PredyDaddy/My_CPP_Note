@@ -520,7 +520,215 @@ int main() {
 2. 派生类必须实现在基类中定义的纯虚函数，纯虚函数体现了一个规范的作用。
 3. 纯虚函数没有函数体，只是一个声明，在函数声明结尾加上=0也只是为了告诉编译器此函数为纯虚函数
 4. =0 也只是在虚函数表中保留一个位置，但是这个特定的位置不放地址
-5. 之前说到每个虚函数都有自己的虚函数指针，这里就用到了。子类实现了基类的纯虚函数之后对应的指针指向实现的地方。
+5. 之前说到每个虚函数都有自己的虚函数指针，这里就用到了。子类实现了基类的纯虚函数之后对应的指针指向实现的地方。实现的地方是代码段，下面是一个案例
+
 
 ![image](https://user-images.githubusercontent.com/109494714/219242845-0e5db22c-0b6a-41fe-8551-b76697affdfb.png)
 
+
+```cpp
+class Hero
+{
+public:
+    virtual void Back() = 0;
+};
+
+class Hero1 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero1 back" << endl;
+    }
+};
+
+class Hero2 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero2 back" << endl;
+    }
+};
+
+int main()
+{
+    // Hero h; 会报错，无法被实例化创建对象所以被叫作抽象基类，自然也无法为分配内存空间
+    Hero1 h1;
+    return 0;
+}
+```
+
+# 10. 抽象基类
+1. 包含纯虚函数的基类叫做抽象基类，因为没有函数体，所以无法被实例化创建对象所以被叫作抽象基类，自然也无法为分配内存空间
+2. 抽象基类统舱时作为基类来规范化其派生类，让派生类实现其内部的纯虚函数，派生类必须实现纯虚函数才能被实例化
+```cpp
+class Hero
+{
+public:
+    virtual void Back() = 0;
+};
+
+class Hero1 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero1 back" << endl;
+    }
+};
+
+class Hero2 : public Hero
+{
+public:
+    void Back()
+    {
+        cout << "hero2 back" << endl;
+    }
+};
+
+int main()
+{
+    // 两种调用方法,
+    Hero *hptr;
+    hptr = new Hero1;
+    hptr->Back();
+
+    
+    Hero2 h2; // 也可以说是拿h2保存这个实例化出来的英雄
+    hptr = &h2;
+    hptr->Back();
+    return 0;
+}
+
+```
+
+# 11. 抽象基类的设计问题
+1. 如果我们希望派生类也是抽象类，那么派生类中也不需要实现，同样也不能被实例化
+2. 如果希望派生类是普通类，需要用来实例化，那么必须实现抽象基类中的纯虚函数
+3. 设计思考: 当某个类只需要描述某一事物的特征时，把他设计成抽象基类
+    - 下面的Shape就是一个案例, 圆和正方形的周长面积都不相同，我们用抽象基类去描述并且规范了代码
+```cpp
+class Shape
+{
+public:
+    // 需要子类完成的功能, 不同形状的东西面积周长的公式都不一样
+    // 无法在基类中实现
+    virtual void getArea() = 0;
+    virtual void getPermiter() = 0;
+};
+
+class Circle : public Shape
+{
+public:
+    // 不带参数的构造函数
+    Circle()
+    {
+        this->_radius = 10;
+    }
+    Circle(int radius) : _radius(radius) {}
+
+public:
+    void getArea()
+    {
+        int res = 3.14 * _radius * _radius;
+        cout << "Circle Area: " << res << endl;
+    }
+
+    void getPermiter()
+    {
+        int res = 2 * 3.14 * _radius;
+        cout << "Circle Permiter: " << res << endl;
+    }
+
+private:
+    int _radius;
+};
+
+class Square : public Shape
+{
+public:
+    Square()
+    {
+        this->_size = 10;
+    }
+
+    Square(int size) : _size(size) {}
+
+public:
+    void getArea()
+    {
+        int res = _size * _size;
+        cout << "Square Area: " << res << endl;
+    }
+    void getPermiter()
+    {
+        int res = _size * 4;
+        cout << "Square Permite: " << res << endl;
+    }
+
+private:
+    int _size;
+};
+int main()
+{
+    // 经过测试，可以实例化，抽象基类的需求完成了
+    Circle c1;
+    Circle c2(5);
+
+    Square s1;
+    Square s2(5);
+
+    // 用一个数组保存这两个圆
+    Shape *shape[4];
+    shape[0] = &c1;
+    shape[1] = &c2;
+    shape[2] = &s1;
+    shape[3] = &s2;
+
+    for (int i = 0; i < 4; i++)
+    {
+        shape[i]->getArea();
+        shape[i]->getPermiter();
+    }
+    return 0;
+}
+```
+
+# 12. 虚析构函数
+虚析构函数是一个虚函数，它在C++中用于在删除指向派生类对象的基类指针时，正确地销毁对象。当使用基类指针删除派生类对象时，如果基类中的析构函数不是虚函数，那么只会调用基类的析构函数，**不会调用派生类的析构函数**，导致对象没有被完全销毁，从而产生内存泄漏等问题。而如果将基类的析构函数声明为虚函数，那么当删除指向派生类对象的基类指针时，会自动调用派生类的析构函数来完成对象的销毁。可以通过尝试在Base的析构函数前去掉关键字virtual，是不会调用Derived的析构函数的
+```cpp
+class Base
+{
+public:
+    Base()
+    {
+        cout << "Base构造函数" << endl;
+    }
+    virtual ~Base()
+    {
+        cout << "Base析构函数" << endl;
+    }
+};
+
+class Derived : public Base
+{
+public:
+    Derived()
+    {
+        cout << "Derived构造函数" << endl;
+    }
+    ~Derived()
+    {
+        cout << "Derived的析构函数" << endl;
+    }
+};
+
+int main()
+{
+    Base *ptr;
+    ptr = new Derived;
+    delete ptr;
+    return 0;
+}
+```

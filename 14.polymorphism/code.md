@@ -1,37 +1,35 @@
 ```cpp
-class A {
+class Base
+{
 public:
-    virtual void vfunc1();
-    void func1();
+    Base()
+    {
+        cout << "Base构造函数" << endl;
+    }
+    virtual ~Base()
+    {
+        cout << "Base析构函数" << endl;
+    }
 };
 
-class B : public A {
+class Derived : public Base
+{
 public:
-    void vfunc1() override; // 重写 A::vfunc1()
-    void func1();
-    using A::func1; // 指定 A::func1() 的作用域
-    void func2();
+    Derived()
+    {
+        cout << "Derived构造函数" << endl;
+    }
+    ~Derived()
+    {
+        cout << "Derived的析构函数" << endl;
+    }
 };
 
-void B::vfunc1() {
-    std::cout << "This is B::vfunc1()." << std::endl;
-}
-
-void B::func1() {
-    std::cout << "This is B::func1()." << std::endl;
-}
-
-void B::func2() {
-    std::cout << "This is B::func2()." << std::endl;
-}
-
-int main() {
-    B b;
-    b.vfunc1(); // 调用 B::vfunc1()
-    b.func1(); // 调用 B::func1()
-    b.A::func1(); // 调用 A::func1()
-    b.func2(); // 调用 B::func2()
+int main()
+{
+    Base *ptr;
+    ptr = new Derived;
+    delete ptr;
     return 0;
 }
-
 ```
