@@ -614,6 +614,7 @@ int main()
 #endif
 
 // 虚析构函数
+#if 0
 class Base
 {
 public:
@@ -647,3 +648,5 @@ int main()
     delete ptr;
     return 0;
 }
+#endif
+
