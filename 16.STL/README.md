@@ -1,4 +1,5 @@
 
+
 # 1. STL 概念
 1. C++ STL 是指 C++ Standard Template Library，是一套标准的 C++ 模板类库。它提供了一系列的容器类（如向量、队列、列表、集合等等）、算法（如排序、查找、删除、替换等等）以及迭代器等重要组件，可以大大提高程序的开发效率和代码质量。
 
@@ -15,6 +16,9 @@
 1. 迭代器（iterator）是一个泛化的指针，提供对容器内元素的访问，类似于指针的功能。但是，与指针不同，迭代器可以遍历容器中的所有元素，而不需要知道容器的内部结构。
 
 2. 可以将迭代器看作一个容器元素的指针。不同类型的容器（比如 vector，list 等）拥有不同的迭代器类型。一般情况下，迭代器提供了遍历容器元素的功能，支持移动、访问和修改容器中的元素。
+
+## 2.2 顺序容器: vector, list, deque
+1. 
 
 
 # 3. vector容器
@@ -41,7 +45,8 @@ vector<CA> vecCA;     	//用于存放CA对象的vector容器。由于容器元�
 - 开辟新的空间
 - 把之前的元素复制过去
 - 把之前的容器析构掉
-- vector<int> vec;
+- 当vector容器的size达到capacity时，vector会自动进行扩容。扩容的过程中，vector会开辟一个新的内存空间，将旧容器中的元素复制到新容器中，然后释放旧的内存空间。默认情况下，vector容器的capacity增加到原来的两倍。
+- **vector<int> vec**;
 # 3.4 增加
 - vec.push_back(20); 末尾添加元素 O(1) 有可能导致元素扩容
 - vec.insert(it, 20); 在指定位置it上添加一个元素20, O(n) 有可能导致元素扩容
@@ -312,4 +317,215 @@ int main()
 
 # 5. list: 链表容器
 ## 5.1 底层的数据结构
-1. 
+1. 双相的循环链表
+2. 最大的区别就是insert/erase是一个O(1)的操作
+3. 查询使用迭代器，依然是O(n)
+4. deque和list因为是二维和双向的原因，相比于vector多了一个push_front和pop_front()的操作
+5. 因为是循环列表，需要用std::advance(it, 2);来往后移动迭代器两位，移到元素末尾就会回到头的位置，具体看下面代码中指定元素添加和删除部分
+6. 其他操作同deque的操作
+![在这里插入图片描述](https://img-blog.csdnimg.cn/fcbff6299137402e8e85df2a2c371995.png)
+
+```cpp
+#include <iostream>
+#include <list>
+
+using namespace std;
+
+void deq_show(list<int> deq)
+{
+  cout << "Element: ";
+  for (auto element : deq)
+  {
+    cout << element << " ";
+  }
+  cout << endl;
+}
+
+void func1()
+{
+  list<int> lst = {1, 2, 3};
+  deq_show(lst);
+
+  // 在队尾和队首插入元素
+  lst.push_front(20);
+  lst.push_back(33);
+  deq_show(lst);
+
+  // 在队尾和队首删除元素
+  lst.pop_front();
+  lst.pop_back();
+  deq_show(lst);
+
+  // 在指定元素添加删除添加
+  auto it = lst.begin();
+  std::advance(it, 2);
+  lst.insert(it, 99); 
+  deq_show(lst);
+
+  std::advance(it, 4);
+  lst.erase(it);
+  deq_show(lst);
+}
+
+int main()
+{
+
+  func1();
+  return 0;
+}
+
+```
+
+
+# 6. 顺序容器总结: vector, deque, list
+
+1. vector的特点: 动态数组，内存是连续的，2倍的方式进行扩容，vector<int> vec;
+2. deque: 动态开辟的二维数组空间，第二维度是固定长度的数组空间，扩容的时候 (第一维度进行2倍扩容)
+3. deque的内存不是连续的，只有第一个二维是连续的，哪怕不扩容，上下都是独立的内存空间
+
+## 6.1 vector 和 deque的区别/应用场景的优缺点？
+1. 底层数据结构不同: 动态数组，动态开辟的二维数组
+2. 前中后插入删除元素的时间复杂度: 最前面插入deque是O(1) vector是O(n)
+3. 涉及到front的操作用deque好一些
+4. 内存的使用效率: vector 需要的内存空间是连续的，deque可以分块进行数据存储，只要有适合下一个二维数组的内存块就可以存放
+5. 在中间进行insert/erase，vector deque哪个好点儿哪个差一点？
+- 从时间复杂度都是O(n)，vector稍微好点，内存是连续的，因为诺元素的时候要在内存块儿之间操作 
+## 6.2 vector 和 list的区别/应用场景的优缺点？
+1. 什么时候用数组好，什么时候用链表好。
+2. 底层数据是数组和链表
+3. 数组: 增加删除O(n) 链表中间的增删O(1) 但是随机访问(查询)上数组有下标，而链表是O(n) 
+
+# 7. 标准容器-容器适配器
+## 7.1 理解适配器
+1. 适配器底层没有自己的数据结构，他都是里国内外一个容器的封装，他的方法全部由底层依赖的容器进行实现的，下面是一个案例
+
+```cpp
+#include <iostream>
+#include <deque>
+using namespace std;
+
+template <typename T, typename Container = deque<T>>
+class Stack
+{
+public:
+  void push(const T &val) { con.push_back(val); }
+  void pop() { con.pop_back(); }
+  T top() const { return con.back(); }
+
+private:
+  Container con;
+};
+
+int main()
+{
+  
+  return 0;
+}
+```
+
+2. 没有自己的迭代器,所以展示代码只能一个一个pop(),复制一份
+```cpp
+void stack_show(stack<int> &s1)
+{
+  stack<int> s(s1); // 复制一份
+  cout << "element: ";
+  while (!s.empty())
+  {
+    cout << s.top() << " ";
+    s.pop();
+  }
+  cout << endl;
+}
+```
+
+## 7.2 stack(栈)的主要用法
+1. push 入栈
+2. pop 出栈
+3. top查看栈顶元素
+4. empty判断栈空
+5. size返回元素个数
+```cpp
+#include <iostream>
+#include <deque>
+#include <stack>
+#include <list>
+#include <vector>
+#include <queue>
+using namespace std;
+
+void stack_show(stack<int> &s1)
+{
+  stack<int> s(s1); // 复制一份
+  cout << "element: ";
+  while (!s.empty())
+  {
+    cout << s.top() << " ";
+    s.pop();
+  }
+  cout << endl;
+}
+
+int main()
+{
+  // push 入栈 pop 出栈 top查看栈顶元素  empty判断栈空  size返回元素个数
+  stack<int> s1;
+  for (int i = 0; i < 20; i++)
+  {
+    s1.push(rand() % 100 + 1);
+  }
+  stack_show(s1);
+  stack_show(s1);
+  return 0;
+}
+```
+# 8. queue(队列): 
+1. push 入队
+2. pop 出队
+3. front 查看对头元素
+4. back查看队尾元素
+5. empty判断为空
+6. size返回元素个数
+```cpp
+#include <iostream>
+#include <deque>
+#include <stack>
+#include <list>
+#include <vector>
+#include <queue>
+using namespace std;
+
+void queue_show(queue<int> &q1)
+{
+  queue<int> q(q1); // 复制一份
+  cout << "element: ";
+  while (!q.empty())
+  {
+    cout << q.front() << " ";
+    q.pop();
+  }
+  cout << endl;
+}
+
+int main()
+{
+
+  queue<int> q1;
+  for (int i = 0; i < 20; i++)
+  {
+    q1.push(rand() % 100 + 1);
+  }
+  queue_show(q1);
+  queue_show(q1);
+  return 0;
+}
+```
+# 9. 为什么queue, stack 依赖deque
+1. vector的初始内存使用效率太低了，慢慢进行扩容，deque 第一次一次性就可以放1024个整数
+2. deque支持头部删除，queue如果依赖vector, 其底层出队效率很低
+3. vector需要大片的内存，而deque只需要分段的内存，当存储大量数据的时，显然deque对于内存的利用率好一些
+# 10. priority queue为什么依赖于vector?
+1. 默认的数据是个大根堆结构，适合vector这种连续的内存
+
+# 11. 关联容器
+1.各个容器底层的数据结构 O(1)  O(log2n) 
+

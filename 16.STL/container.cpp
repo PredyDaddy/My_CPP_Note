@@ -1,4 +1,3 @@
-```cpp
 #include <iostream>
 #include <deque>
 #include <stack>
@@ -31,4 +30,3 @@ int main()
   queue_show(q1);
   return 0;
 }
-```

@@ -1,9 +1,9 @@
 #include <iostream>
-#include <deque>
+#include <list>
 
 using namespace std;
 
-void deq_show(deque<int> deq)
+void deq_show(list<int> deq)
 {
   cout << "Element: ";
   for (auto element : deq)
@@ -15,27 +15,28 @@ void deq_show(deque<int> deq)
 
 void func1()
 {
-  deque<int> dq = {1, 2, 3};
-  deq_show(dq);
+  list<int> lst = {1, 2, 3};
+  deq_show(lst);
 
   // 在队尾和队首插入元素
-  dq.push_front(20);
-  dq.push_back(33);
-  deq_show(dq);
+  lst.push_front(20);
+  lst.push_back(33);
+  deq_show(lst);
 
   // 在队尾和队首删除元素
-  dq.pop_front();
-  dq.pop_back();
-  deq_show(dq);
+  lst.pop_front();
+  lst.pop_back();
+  deq_show(lst);
 
   // 在指定元素添加删除添加
-  auto it = dq.begin();
-  it = it + 2;
-  dq.insert(it, 99);
-  deq_show(dq);
+  auto it = lst.begin();
+  std::advance(it, 2);
+  lst.insert(it, 99); 
+  deq_show(lst);
 
-  dq.erase(it);
-  deq_show(dq);
+  std::advance(it, 4);
+  lst.erase(it);
+  deq_show(lst);
 }
 
 int main()
