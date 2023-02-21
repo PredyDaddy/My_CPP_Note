@@ -1,3 +1,4 @@
+
 # 1. STL 概念
 1. C++ STL 是指 C++ Standard Template Library，是一套标准的 C++ 模板类库。它提供了一系列的容器类（如向量、队列、列表、集合等等）、算法（如排序、查找、删除、替换等等）以及迭代器等重要组件，可以大大提高程序的开发效率和代码质量。
 
@@ -100,5 +101,215 @@ int main()
   return 0;
 }
 ```
-# 3.9 删除vector里面的偶数
+# 3.9 对vector里元素的操作
+1. 删除vector里面的偶数
+2. 给奇数前面加一个小的数字
 
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void vec_show(const vector<int> &vec)
+{
+  cout << "element: ";
+  for (auto element : vec) // C++ 11 中的新特性
+  {
+    cout << element << " ";
+  }
+  std::cout << std::endl;
+}
+
+int main()
+{
+  // 创建int类型的vector容器
+  vector<int> vec; // 如果想要一个float类型的容器: vector<float> vec;
+
+  // 往容器里面添加20个元素
+  for (int i = 0; i < 20; i++)
+  {
+    vec.push_back(rand() % 100 + 1); // 往里面添加1 - 100的元素
+  }
+
+  vec_show(vec);
+
+  auto it2 = vec.begin();
+
+  while (it2 != vec.end())
+  {
+    if (*it2 % 2 == 0)
+    {
+      // 里面放迭代器
+      it2 = vec.erase(it2); // 删掉之后再继续判断上到这个位置的元素是不是偶数
+    }
+    else
+    {
+      ++it2;
+    }
+  }
+  vec_show(vec);
+
+  for (auto it3 = vec.begin(); it3 < vec.end(); it3++)
+  {
+    if (*it3 % 2 != 0)
+    {
+      // 前面放迭代器，后面放元素
+      vec.insert(it3, *it3 - 1);
+      it3++; // 假如第三个是奇书，我们插入后，本来在第三个的元素去到第四个了，我们下一个判断的是第五个元素
+    }
+  }
+  vec_show(vec);
+  return 0;
+}
+```
+
+## 3.10 vector的常用用法
+1. reserve() 预留了空间，不用一次一次扩容，有效率
+2. resize 不仅开辟了空间还添加了元素
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void vec_show(const vector<int> &vec)
+{
+  cout << "element: ";
+  for (auto element : vec) // C++ 11 中的新特性
+  {
+    cout << element << " ";
+  }
+  std::cout << std::endl;
+}
+
+int main()
+{
+  // 创建int类型的vector容器
+  vector<int> vec; // 如果想要一个float类型的容器: vector<float> vec;
+
+  // 往容器里面添加20个元素
+  for (int i = 0; i < 20; i++)
+  {
+    vec.push_back(rand() % 100 + 1); // 往里面添加1 - 100的元素
+  }
+
+  vec_show(vec);
+
+  auto it2 = vec.begin();
+
+  while (it2 != vec.end())
+  {
+    if (*it2 % 2 == 0)
+    {
+      // 里面放迭代器
+      it2 = vec.erase(it2); // 删掉之后再继续判断上到这个位置的元素是不是偶数
+    }
+    else
+    {
+      ++it2;
+    }
+  }
+  vec_show(vec);
+
+  for (auto it3 = vec.begin(); it3 < vec.end(); it3++)
+  {
+    if (*it3 % 2 != 0)
+    {
+      // 前面放迭代器，后面  放元素
+      vec.insert(it3, *it3 - 1);
+      it3++; // 假如第三个是奇书，我们插入后，本来在第三个的元素去到第四个了，我们下一个判断的是第五个元素
+    }
+  }
+  vec_show(vec);
+  return 0;
+}
+```
+# 4. deque容器(双端队列容器)
+## 4.1 底层逻辑(以int类型的deque容器为例)
+1. 两头，每头元素的个数取决于类型
+```cpp
+#define MAP_SIZE 2
+#define QUE_SIZE 4096/sizeof(T)
+
+// 以int类型的deque容器为例
+deque<int> deq;
+4096 / sizeof(int) = 1024 // 双端二维，每头都有1024个元素
+```
+2. 开始放元素前
+![在这里插入图片描述](https://img-blog.csdnimg.cn/50a91ca920974ce385f74447d908894b.png)
+3. 第一个满了，map_size 2 ->4, 从2/2 = 1， 从第一个队列开始放元素
+![在这里插入图片描述](https://img-blog.csdnimg.cn/551e3d50571e4fd5a5e1ca7480d66c9d.png)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/5861ce7704a6468fbe5de70a2286b78e.png)
+
+
+4. 第二次满了，map_size 4->8，从第2个队列开始放元素
+![在这里插入图片描述](https://img-blog.csdnimg.cn/5b495b2f76c1419e81930ecfaa1cc17b.png)
+
+5. **总结: 动态开辟的二维数组，以为数组从2开始，以两倍的方式进行扩容。每次扩容后，原来的二维数组，从oldsize/2的下标开始存放元素，上下预留相同的空行，便于增加元素**  
+
+## 4.2 增加
+1. deq.push_back(20); 尾部添加O(1)
+2. deq.push_front(20); 首部添加哎O(1)
+3. deq.insert(it, 20); 指定元素添加O(n)
+
+## 4.3 删除
+1. deq.pop_back();  尾部删除 O(1)
+2. deq.pop_front(); 首部删除 O(1)
+3. dq.erase(it); 指定元素删除 O(n)
+
+## 4.4 查询
+iterator(连续的inseret和erase要考虑迭代器失效，用返回更新迭代器)
+
+## 4.5 一些案例
+```cpp
+#include <iostream>
+#include <deque>
+
+using namespace std;
+
+void deq_show(deque<int> deq)
+{
+  cout << "Element: ";
+  for (auto element : deq)
+  {
+    cout << element << " ";
+  }
+  cout << endl;
+}
+
+void func1()
+{
+  deque<int> dq = {1, 2, 3};
+  deq_show(dq);
+
+  // 在队尾和队首插入元素
+  dq.push_front(20);
+  dq.push_back(33);
+  deq_show(dq);
+
+  // 在队尾和队首删除元素
+  dq.pop_front();
+  dq.pop_back();
+  deq_show(dq);
+
+  // 在指定元素添加删除添加
+  auto it = dq.begin();
+  it = it + 2;
+  dq.insert(it, 99);
+  deq_show(dq);
+
+  dq.erase(it);
+  deq_show(dq);
+}
+
+int main()
+{
+
+  func1();
+  return 0;
+}
+
+```
+
+# 5. list: 链表容器
+## 5.1 底层的数据结构
+1. 

@@ -1,4 +1,3 @@
-```cpp
 #include <iostream>
 #include <deque>
 
@@ -45,5 +44,3 @@ int main()
   func1();
   return 0;
 }
-
-```
