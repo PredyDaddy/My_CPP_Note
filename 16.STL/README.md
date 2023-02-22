@@ -527,5 +527,497 @@ int main()
 1. 默认的数据是个大根堆结构，适合vector这种连续的内存
 
 # 11. 关联容器
-1.各个容器底层的数据结构 O(1)  O(log2n) 
+1. 各个容器底层的数据结构 O(1)  O(log2n)
+2. 无序的关联容器 => 链式哈希表  增删查O(1)  
+- set:集合 key   map:映射表 [key,value]
+- unordered_set 单重集合
+- unordered_multiset 多重集合
+- unordered_map 单重映射表
+- unordered_multimap 多重映射表
+```cpp
+// 使用无序关联容器包含的头文件
+#include <unordered_set>
+#include <unordered_map>
+```
+3. 有序关联容器 => 红黑树 增删查O(log2n) 2是底数(树的层数，树的高度)
+- set
+- multiset
+- map
+- multimap
+```cpp
+// 使用有序关联容器包含的头文件  红黑树
+#include <set> // set multiset
+#include <map> // map multimap
+```
+## 11.1 set的增删改查代码
+- 单重集合，不会存储key值重复的元素
+- 多重集合
+- 遍历set
+- 按key值删除元素
+- 用迭代器删除元素
+- find方法
+- C++ 11的迭代器输出
+```cpp
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+using namespace std;
+
+int main()
+{
+  // 1. 单重集合，不会存储key值重复的元素
+  unordered_set<int> set1;
+  for (int i = 0; i < 50; i++)
+  {
+    // list/vector/deque insert(it, val)
+    // 集合插入不需要迭代器
+    set1.insert(rand() % 20 + 1);
+  }
+  cout << set1.size() << endl;
+  cout << set1.count(10) << endl;
+
+  // 2. 多重集合
+  unordered_multiset<int> set2;
+  for (int i = 0; i < 50; i++)
+  {
+    set2.insert(rand() % 20 + 1);
+  }
+  cout << set2.size() << endl;
+  cout << set2.count(11) << endl;
+
+  // 3. 遍历set
+  auto it1 = set1.begin();
+  cout << "Element: ";
+  for (; it1 != set1.end(); it1++)
+  {
+    cout << *it1 << " ";
+  }
+  cout << endl;
+
+  // 4. 按key值删除元素
+  set1.erase(20);
+
+  // 5. 用迭代器删除元素
+  for (it1 = set1.begin(); it1 != set1.end();)
+  {
+    if (*it1 == 20)
+    {
+      it1 = set1.erase(it1); // 调用了erase，it1迭代器失效了
+    }
+    else
+    {
+      it1++; // 万一下一个元素也是20，就不会进来这个else
+    }
+  }
+
+  // 6. find方法
+  it1 = set1.find(14);
+  cout << *it1;
+  if (it1 != set1.end()) // 找不到返回end
+  {
+    set1.erase(it1);
+  }
+
+  // 7. C++ 11的迭代器输出
+  for (int v : set1)
+  {
+    cout << v << " ";
+  }
+  cout << endl;
+  return 0;
+}
+```
+
+## 11.2 map的格式是存储键值对
+
+- find()
+```cpp
+struct Pair
+{
+private:
+  first; // key
+  second; // value 
+};
+```
+
+6. map的基本操作
+- 定义map, multimap 打包成键值对
+- C++ 11 的方式插入
+- [] 运算符重载返回计算值
+- 更改操作
+- 删除元素
+```cpp
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+#include <string>
+using namespace std;
+
+// set的使用方法
+#if 0
+int main()
+{
+  // 1. 单重集合，不会存储key值重复的元素
+  unordered_set<int> set1;
+  for (int i = 0; i < 50; i++)
+  {
+    // list/vector/deque insert(it, val)
+    // 集合插入不需要迭代器
+    set1.insert(rand() % 20 + 1);
+  }
+  cout << set1.size() << endl;
+  cout << set1.count(10) << endl;
+
+  // 2. 多重集合
+  unordered_multiset<int> set2;
+  for (int i = 0; i < 50; i++)
+  {
+    set2.insert(rand() % 20 + 1);
+  }
+  cout << set2.size() << endl;
+  cout << set2.count(11) << endl;
+
+  // 3. 遍历set
+  auto it1 = set1.begin();
+  cout << "Element: ";
+  for (; it1 != set1.end(); it1++)
+  {
+    cout << *it1 << " ";
+  }
+  cout << endl;
+
+  // 4. 按key值删除元素
+  set1.erase(20);
+
+  // 5. 用迭代器删除元素
+  for (it1 = set1.begin(); it1 != set1.end();)
+  {
+    if (*it1 == 20)
+    {
+      it1 = set1.erase(it1); // 调用了erase，it1迭代器失效了
+    }
+    else
+    {
+      it1++; // 万一下一个元素也是20，就不会进来这个else
+    }
+  }
+
+  // 6. find方法
+  it1 = set1.find(14);
+  cout << *it1;
+  if (it1 != set1.end()) // 找不到返回end()
+  {
+    set1.erase(it1);
+  }
+
+  // 7. C++ 11的迭代器输出
+  for (int v : set1)
+  {
+    cout << v << " ";
+  }
+  cout << endl;
+  return 0;
+}
+#endif
+
+int main()
+{
+  // 1. 定义map, multimap 打包成键值对
+  unordered_map<int, string> map1;
+  // unordered_multimap<int, string> map1;
+  map1.insert(make_pair(1000, "蔡徐坤"));
+  // C++ 11 的方式插入
+  map1.insert({1001, "鸡哥"});
+  map1.insert({1002, "坤哥"});
+  map1.insert({1000, "asd"}); // 不允许key重复的
+  cout << map1.size() << endl;
+
+  // 2. [] 运算符重载返回计算值
+  cout << map1[1000] << endl;
+  // 如果key不存在，会插入一对数据以及value默认值
+  cout << map1[44] << endl;
+  map1[44] = "AAA";
+  cout << map1[44] << endl;
+
+  // 更改操作
+  map1[1000] = "ASDASDASD";
+  cout <<  map1[1000] << endl;
+
+  // 3. 删除元素
+  map1.erase(1002);
+
+  // 4. find()
+  auto it1 = map1.find(1001);
+  if (it1 != map1.end()) // 找不到返回end
+  {
+    cout << "key: " << it1->first << " value: "<< it1->second << endl;
+  }
+  
+  return 0;
+}
+```
+## 11.3 map在查询海量数据的时候
+```cpp
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+#include <string>
+using namespace std;
+
+// set的使用方法
+#if 0
+int main()
+{
+  // 1. 单重集合，不会存储key值重复的元素
+  unordered_set<int> set1;
+  for (int i = 0; i < 50; i++)
+  {
+    // list/vector/deque insert(it, val)
+    // 集合插入不需要迭代器
+    set1.insert(rand() % 20 + 1);
+  }
+  cout << set1.size() << endl;
+  cout << set1.count(10) << endl;
+
+  // 2. 多重集合
+  unordered_multiset<int> set2;
+  for (int i = 0; i < 50; i++)
+  {
+    set2.insert(rand() % 20 + 1);
+  }
+  cout << set2.size() << endl;
+  cout << set2.count(11) << endl;
+
+  // 3. 遍历set
+  auto it1 = set1.begin();
+  cout << "Element: ";
+  for (; it1 != set1.end(); it1++)
+  {
+    cout << *it1 << " ";
+  }
+  cout << endl;
+
+  // 4. 按key值删除元素
+  set1.erase(20);
+
+  // 5. 用迭代器删除元素
+  for (it1 = set1.begin(); it1 != set1.end();)
+  {
+    if (*it1 == 20)
+    {
+      it1 = set1.erase(it1); // 调用了erase，it1迭代器失效了
+    }
+    else
+    {
+      it1++; // 万一下一个元素也是20，就不会进来这个else
+    }
+  }
+
+  // 6. find方法
+  it1 = set1.find(14);
+  cout << *it1;
+  if (it1 != set1.end()) // 找不到返回end()
+  {
+    set1.erase(it1);
+  }
+
+  // 7. C++ 11的迭代器输出
+  for (int v : set1)
+  {
+    cout << v << " ";
+  }
+  cout << endl;
+  return 0;
+}
+#endif
+
+// map的基本操作
+#if 0
+int main()
+{
+  // 1. 定义map, multimap 打包成键值对
+  unordered_map<int, string> map1;
+  // unordered_multimap<int, string> map1;
+  map1.insert(make_pair(1000, "蔡徐坤"));
+  // C++ 11 的方式插入
+  map1.insert({1001, "鸡哥"});
+  map1.insert({1002, "坤哥"});
+  map1.insert({1000, "asd"}); // 不允许key重复的
+  cout << map1.size() << endl;
+
+  // 2. [] 运算符重载返回计算值
+  cout << map1[1000] << endl;
+  // 如果key不存在，会插入一对数据以及value默认值
+  cout << map1[44] << endl;
+  map1[44] = "AAA";
+  cout << map1[44] << endl;
+
+  // 更改操作
+  map1[1000] = "ASDASDASD";
+  cout <<  map1[1000] << endl;
+
+  // 3. 删除元素
+  map1.erase(1002);
+
+  // 4. find()
+  auto it1 = map1.find(1001);
+  if (it1 != map1.end()) // 找不到返回end
+  {
+    cout << "key: " << it1->first << " value: "<< it1->second << endl;
+  }
+  
+  return 0;
+}
+#endif
+
+// map在处理海量数据时候的优势
+int main()
+{
+  const int ARR_LEN = 10000;
+  int arr[ARR_LEN] = {0}; // 全部初始化为0
+  for (int i = 0; i < ARR_LEN; i++)
+  {
+    arr[i] = rand() % 10000 + 1;
+  }
+
+  // 统计上面数字那些重复了，并且统计数字的重复的次数
+  unordered_map<int, int> map1; // 值， 次数
+  // 方法1
+#if 0
+  for (int k : arr) // arr里的元素依次给k
+  {
+    auto it = map1.find(k);
+    if (it == map1.end()) // 没找到
+    {
+      map1.insert({k, 1});
+    }
+    else
+    {
+      it->second++;
+    }
+  }
+
+  // 查看结果
+  for (pair<int, int> p : map1)
+  {
+    if (p.second > 1)
+    {
+      cout << "key: " << p.first << " count: " << p.second << endl;
+    }
+  }
+  return 0;
+#endif
+
+  // 方法2:
+  for (int k : arr)
+  {
+    // []查询操作,找到了先来个{k, 0}，++后就是{k, 1} 再找到一个就是{k, 2}
+    map1[k]++;
+  }
+
+  for (auto it = map1.begin(); it != map1.end(); it++)
+  {
+    if (it->second > 1)
+    {
+      cout << "int: " << it->first << " value: " << it->second << endl;
+    }
+  }
+  return 0;
+}
+```
+
+# 12. 有序的关联容器map
+1. 使用都是一样的
+```cpp
+int main()
+{
+  set<int> set1;
+  for (int i = 0; i < 20; i++)
+  {
+    set1.insert(rand() % 20 + 1);
+  }
+
+  cout << "Element: ";
+  for (int v : set1)
+  {
+    cout << v << " ";
+  }
+  cout << endl;
+  return 0;
+}
+```
+# 13. 迭代器与可迭代对象
+1. 在C++中，迭代器是一种访问容器或序列中元素的方式，它相当于一个指针，指向容器或序列中的某个元素。通过使用迭代器，可以实现对容器或序列中元素的访问、添加、删除等操作。使用迭代器可以遍历容器或序列中的所有元素，对每个元素进行操作。
+
+2。 可迭代对象是指实现了迭代器的对象，通常是容器或序列。对于一个可迭代对象，可以使用迭代器遍历其中的元素，对每个元素进行操作。STL中的诸如vector、list、map等容器都是可迭代对象，它们实现了迭代器，并且可以使用迭代器进行遍历。除了容器之外，还可以通过实现自定义迭代器来使自己的对象成为可迭代对象，从而可以使用STL算法进行操作。
+# 13. 迭代器itertor
+1. 普通的正向迭代器
+2. 普通的反向迭代器
+3. 常量的正向迭代器(只可以解引用读取不可以更改)
+4. 常量的反向迭代器(只可以解引用读取不可以更改)
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// 正向迭代器
+#if 0
+int main()
+{
+   
+  vector<int> vec;
+  for (int i = 0; i < 20; i++)
+  {
+    vec.push_back(rand() % 100);
+  }
+
+  // vector<int>::interator
+  auto it1 = vec.begin();
+  for (; it1 != vec.end(); it1++)
+  {
+    cout << *it1 << " ";
+  }
+  cout << endl;
+}
+#endif
+
+// 反向迭代器
+#if 0
+int main()
+{
+  vector<int> vec;
+  for (int i = 0; i < 20; i++)
+  {
+    vec.push_back(rand() % 100);
+  }
+  auto rit = vec.rbegin();
+  for (; rit != vec.rend(); rit++)
+  {
+    cout << *rit << " ";
+  }
+  cout << endl;
+  return 0;
+}
+#endif
+
+// 常量迭代器
+int main()
+{
+
+  vector<int> vec;
+  for (int i = 0; i < 20; i++)
+  {
+    vec.push_back(rand() % 100);
+  }
+
+  // vector<int>::interator
+  // auto it1 = vec.begin();
+  vector<int>::const_iterator it1 = vec.begin(); // 不能截引用赋值
+  for (; it1 != vec.end(); it1++)
+  {
+    *it1 = 20; // 报错的
+  }
+  cout << endl;
+}
+```
 
