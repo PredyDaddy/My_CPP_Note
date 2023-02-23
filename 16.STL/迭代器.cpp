@@ -57,7 +57,7 @@ int main()
   vector<int>::const_iterator it1 = vec.begin(); // 不能截引用赋值
   for (; it1 != vec.end(); it1++)
   {
-    *it1 = 20; // 报错的
+    // *it1 = 20; // 报错的
   }
   cout << endl;
 }
