@@ -142,3 +142,20 @@
 5. 显示类型转换 static_cast
 6. dynamic_cast
 7. dynamic_cast 安全转换的流程
+
+# 16. STL
+1. STL 概念
+2. STL分类
+3. vector容器
+4. deque容器(双端队列容器)
+5. deque容器(双端队列容器)
+6. 顺序容器总结: vector, deque, list
+7. 标准容器-容器适配器
+8. queue(队列)
+9. 为什么queue, stack 依赖deque
+10. priority queue为什么依赖于vector?
+11. 关联容器
+12. 有序的关联容器map
+13. 迭代器与可迭代对象
+14. STL中的函数对象
+15. 算法
