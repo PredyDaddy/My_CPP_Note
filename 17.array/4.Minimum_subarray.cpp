@@ -7,21 +7,21 @@ using namespace std;
 class Solution {
 public:
     int minSubArrayLen(int target, vector<int>& nums) {
-        int left = 0;
-        int minLength = INT_MAX;
-        int currentSum = 0;
-
-        for (int right = 0; right < nums.size(); right++) {
-            currentSum += nums[right];
-
-            while (currentSum >= target) {
-                minLength = min(minLength, right - left + 1);
-                currentSum -= nums[left];
-                left++;
+        int slow = 0;
+        int size = nums.size();
+        int min_length = INT_MAX;
+        int current_sum = 0;
+        for (int fast = 0; fast < size; fast++)
+        {
+            current_sum += nums[fast];
+            while (current_sum >= target){
+                min_length = min(min_length, fast - slow + 1);
+                current_sum -= nums[slow];   // 当每次慢指针往前走的时候就要把之前的减掉，因为sum计算的是整个区间的，不然的话就要写for循环来遍历了
+                slow++;
+                
             }
         }
-
-        return (minLength != INT_MAX) ? minLength : 0;
+        return (min_length != INT_MAX) ? min_length : 0;
     }
 };
 
