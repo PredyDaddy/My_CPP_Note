@@ -399,4 +399,27 @@ int main() {
 
 ```
 
-# 4. 
+# 4. 反转链表
+
+## 4.1 双指针法
+```cpp
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *cur = head; // 定义当前位置指针
+        ListNode *prev = NULL; // 定义当前位置指针
+
+        while (cur != NULL){
+            ListNode *next_node = cur->next;
+            cur->next = prev;     // 这里链接起来           
+            prev = cur;           // prev上一位
+            cur = next_node;      // cur上一位
+        }
+        return prev;
+    }
+};
+```
+
+```cpp
+
+```
