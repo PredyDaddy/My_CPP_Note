@@ -11,31 +11,21 @@ struct ListNode {
 class Solution {
 public:
     ListNode* removeElements(ListNode* head, int val) {
-        // 删除头结点, 当头结点的val等于我们要删除的val的时候使用的
-        while (head != NULL && head->val == val){
-            ListNode* tmp = head; // tmp, head指向同一内存空间
-            head = head->next; // 头结点指针指向原来链表的第二个节点
-            delete tmp;
-        }
+        ListNode *dummy = new ListNode(999);
 
-        // 删除非头结点的节点
-        ListNode *cur = head; // 当前指针是head
-        while (cur != NULL){
-            if (cur->val == val){
-                ListNode* tmp = cur; // tmp, head指向同一内存空间
-                cur = cur->next; // 头结点指针指向原来链表的第二个节点
+        // 处理非头节点
+        ListNode *cur = dummy; // 这里已经考虑完了头结点, 所以这个头结点不用操作
+        while (cur != NULL && cur->next != NULL){ // 遍历链表的基本手法
+            if (cur->next->val == val){    
+                ListNode *tmp = cur->next;
+                cur->next = cur->next->next;
                 delete tmp;
             }
-            else{
+            else {
                 cur = cur->next;
             }
         }
-        // 处理链表只有一个节点且值等于 val 的情况
-        if (cur != NULL && cur->val == val) {
-            delete cur;
-            head = NULL; // 链表为空
-        }
-        return head;
+        return dummy->next;
     }
 };
 
@@ -47,6 +37,16 @@ void printList(ListNode* head) {
         current = current->next;
     }
     std::cout << std::endl;
+}
+
+// 这个地方跟上面删除非头结点最大的区别就是不用维护这个代码
+void deleteList(ListNode* head) {
+    ListNode* current = head;
+    while (current != nullptr) {
+        ListNode* tmp = current;
+        current = current->next;
+        delete tmp;
+    }
 }
 
 int main() {
@@ -88,8 +88,9 @@ int main() {
 
     
     // 释放节点内存
-    delete newHead1;
-    delete newHead2;
-    delete newHead3;
+    deleteList(newHead1);
+    deleteList(newHead2);
+    deleteList(newHead3);
+
     return 0;
 }

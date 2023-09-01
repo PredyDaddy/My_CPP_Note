@@ -27,6 +27,8 @@
 
 链表在许多编程场景中都有用途，例如实现栈、队列、缓存等数据结构，也常用于解决某些特定的问题，如链表反转、寻找中间节点等。然而，需要注意链表的操作可能比数组稍微复杂，因为需要更多的指针操作。
 
+
+
 # 2. 题目中的结构体
 ```cpp
 struct ListNode {
@@ -65,7 +67,7 @@ ListNode(int x, ListNode* next) : val(x), next(next) {}
 
 # 2. 移除链表元素
 
-## 2.1 以案例来学习链表
+## 2.1 以案例来学习链表，普通的删除方法
 
 **复习指针**
 ### 1. delete ptr不是删除指针, 而是释放指针指向的内存
@@ -78,12 +80,20 @@ ListNode(int x, ListNode* next) : val(x), next(next) {}
         }
 ```
 
-### 2. main函数中我们new了好多个为什么最后只delete三个？
-在示例代码中，有多个 new 运算符用于动态分配内存来创建节点。然而，在使用 delete 释放内存时，我们只需要释放最终创建的链表的头节点。我们的removeElements()函数return的也是head，指向头结点的指针，会在函数里通过面判断是否需要改变头结点的指向
+### 2. 比较容易的错误写法
 
-这是因为链表中的节点是通过 next 指针连接的，从而形成链式结构。释放链表中的头节点就会依次释放链表中的所有节点，因为每个节点都通过 next 指针连接。释放链表的头节点相当于释放整个链表。
+在删除非头结点的时候容易犯这个错误, 因为是链表，写的时候就很容易参照链表的delete函数的写法，就是直接给一个tmp, 然后cur->next, 然后就直接删除，其实这样是不对的，因为链表删掉了中间节点还要考虑前后的加在一起
 
-所以，你只需要使用 delete 释放每个示例中最终创建的链表的头节点，就会释放整个链表的内存，而不需要逐个删除链表中的每个节点。不需要对每个节点使用 delete，因为链表节点之间是通过指针连接的，释放头节点就会自动释放整个链表。
+```cpp
+        // 删除非头结点的节点
+        ListNode *cur = head; // 当前指针是head
+        while (cur != NULL){
+            if (cur->val == val){
+                ListNode* tmp = cur; // tmp, head指向同一内存空间
+                cur = cur->next; // 头结点指针指向原来链表的第二个节点
+                delete tmp;
+            }
+```
 
 
 ```cpp
@@ -100,21 +110,28 @@ struct ListNode {
 class Solution {
 public:
     ListNode* removeElements(ListNode* head, int val) {
-        // 删除头结点
-        while (head != NULL && head->val == val) { // 注意这里不是if
-            ListNode* tmp = head;
-            head = head->next;
-            delete tmp;
+        // 删除头节点，同时也判断新的头结点是否需要删除
+        while (head != NULL && head->val == val){
+            ListNode *tmp = head;   // 这里让tmp指向需要被移除头结点同一地址
+            head = head->next;      // 这里头结点的指针指向下一个节点
+            delete tmp;             // 移除tmp, 同样也释放掉需要操作头结点的指针
         }
 
-        // 删除非头结点
-        ListNode* cur = head;
-        while (cur != NULL && cur->next!= NULL) {
-            if (cur->next->val == val) {
-                ListNode* tmp = cur->next;
+        // 删除非头结点的节点，这里不只是简单的删除，还要考虑把前一个后一个链接起来
+        /*
+        ex: 1->2->3->2->5, 处理2, 因为这里处理的是非头节点，在1位置链接3处理2，在3链接5处理2
+                                  如果遍历的时候在2处理2，还要写一个prev指针
+
+                                  如果5要处理，就在前一个地方(2)处理，5的next是nullptr, (2)链接5就行了
+        */
+        ListNode *cur = head; // 这里已经考虑完了头结点, 所以这个头结点不用操作
+        while (cur != NULL && cur->next != NULL){ // 遍历链表的基本手法
+            if (cur->next->val == val){    
+                ListNode *tmp = cur->next;
                 cur->next = cur->next->next;
                 delete tmp;
-            } else {
+            }
+            else {
                 cur = cur->next;
             }
         }
@@ -130,6 +147,16 @@ void printList(ListNode* head) {
         current = current->next;
     }
     std::cout << std::endl;
+}
+
+// 这个地方跟上面删除非头结点最大的区别就是不用维护这个代码
+void deleteList(ListNode* head) {
+    ListNode* current = head;
+    while (current != nullptr) {
+        ListNode* tmp = current;
+        current = current->next;
+        delete tmp;
+    }
 }
 
 int main() {
@@ -157,9 +184,13 @@ int main() {
 
     // 示例 3
     ListNode* head3 = new ListNode(7);
-    head3->next = new ListNode(7);
-    head3->next->next = new ListNode(7);
-    head3->next->next->next = new ListNode(7);
+    ListNode* current3 = head3;
+    for (int val : {7, 7, 7}){
+        current3->next = new ListNode(val);
+        current3 = current3->next;
+    }
+    std::cout << "Oringin case 3: ";
+    printList(head3);
     int val3 = 7;
     ListNode* newHead3 = solution.removeElements(head3, val3);
     std::cout << "Case 3: ";
@@ -167,10 +198,205 @@ int main() {
 
     
     // 释放节点内存
-    delete newHead1;
-    delete newHead2;
-    delete newHead3;
+    deleteList(newHead1);
+    deleteList(newHead2);
+    deleteList(newHead3);
+
     return 0;
 }
+
 ```
 
+## 2.2 虚拟头结点写法
+
+这样就只用考虑处理非头结点的情况就好了, 注意这里实例化了之后要用引用，这里也是复习一下实例化和在堆上生成内存返回指针，下面有两种写法
+
+栈上的内存（Stack）：当你创建一个局部变量或对象（例如ListNode dummy(0);）时，这个对象是在栈上分配内存的。这些对象的生命周期是确定的，当它们所在的作用域结束时，它们会自动被销毁，内存会被释放。
+
+堆上的内存（Heap）：当你使用new关键字（例如ListNode* dummy = new ListNode(0);）时，对象是在堆上分配内存的。这些对象的生命周期是不确定的，你需要显式地使用delete来释放内存。
+
+使用指针的一个主要优点是，它允许你在运行时动态地创建和销毁对象。这给了你更大的灵活性，但代价是你需要更仔细地管理内存。
+
+实例化虚拟头节点
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        ListNode dummy(0);
+        dummy.next = head;
+
+        // 处理非头节点
+        ListNode *cur = &dummy; // 这里已经考虑完了头结点, 所以这个头结点不用操作
+        while (cur != NULL && cur->next != NULL){ // 遍历链表的基本手法
+            if (cur->next->val == val){    
+                ListNode *tmp = cur->next;
+                cur->next = cur->next->next;
+                delete tmp;
+            }
+            else {
+                cur = cur->next;
+            }
+        }
+        return dummy.next;
+    }
+};
+```
+
+指针虚拟头结点
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        ListNode *dummy = new ListNode(999);
+
+        // 处理非头节点
+        ListNode *cur = dummy; // 这里已经考虑完了头结点, 所以这个头结点不用操作
+        while (cur != NULL && cur->next != NULL){ // 遍历链表的基本手法
+            if (cur->next->val == val){    
+                ListNode *tmp = cur->next;
+                cur->next = cur->next->next;
+                delete tmp;
+            }
+            else {
+                cur = cur->next;
+            }
+        }
+        return dummy->next;
+    }
+};
+```
+
+# 3. 设计一个链表
+
+通过完整的设计一个链表理解链表是怎么遍历的，新的节点怎么在各个地方链接起来
+
+```cpp
+#include <iostream>
+
+class MyLinkedList {
+public:
+    struct ListNode   // 先创建节点的结构体, val, next, 以及ListNode的构造函数
+    {
+        int val;
+        ListNode *next;
+        ListNode(int x) : val(x), next(nullptr) {}
+    };
+
+private:
+    ListNode *head;    // 指向头结点的指针
+    int size;          // 链表的尺寸
+
+public:
+    MyLinkedList() {
+        head = NULL;
+        size = 0;
+    }
+
+    int get(int index) {
+        // 这个就是取出索引的值
+        if (index < 0 || index >= size)
+            return -1;
+
+        ListNode *cur = head;
+        for (int i = 0; i < index; i++)
+        {
+            cur = cur->next;
+        }
+        return cur->val;
+    }
+
+    void addAtHead(int val) {
+        /*
+        1 -> 2 -> 3 -> 4   
+        添加val
+        val -> 1 -> 2 -> 3 -> 4  
+        */
+        ListNode *new_node = new ListNode(val); // 定义一个新的节点
+        new_node->next = head;  // val链接头结点
+        head = new_node;        // 更新头结点
+        size++;                 
+    }
+
+    void addAtTail(int val) {
+        /*
+        1 -> 2 -> 3 -> 4   
+        添加val
+        1 -> 2 -> 3 -> 4 -> val
+        */
+        // 如果刚初始化也可以使用这个接口
+        if (size == 0){
+            addAtHead(val);
+            return;
+        }
+
+        ListNode *cur = head; // 当前指针位置，从head开始
+        while (cur->next != NULL){ // 这里遍历到最后一个节点
+                cur = cur->next;
+            }
+
+        ListNode *new_node = new ListNode(val); // 定义指向新的节点的指针
+        cur->next = new_node;                   // 链接起来
+        size++; 
+    }
+    
+
+    void addAtIndex(int index, int val) {
+        if (index < 0 || index > size)
+            return;
+
+        if (index == 0) {
+            addAtHead(val);
+            return;
+        }
+
+        ListNode *cur = head;
+        for (int i = 0; i < index - 1; i++){
+            cur = cur->next;
+        }
+        // 现在来到要加的前一个
+        ListNode *new_node = new ListNode(val);
+        new_node->next = cur->next;
+        cur->next = new_node;
+        size++;
+    }
+
+    void deleteAtIndex(int index) {
+        if (index < 0 || index >= size) return;
+        
+        ListNode *cur = head;
+        
+        if (index == 0) {
+            head = head->next;
+            delete cur;
+            --size;
+            return;
+        }
+         for (int i = 0; i < index - 1; i++){
+            cur = cur->next;
+        }
+        // 现在来到要删除的前一个
+        ListNode *tmp = cur->next;
+        cur->next = cur->next->next;
+        delete tmp;
+        size--;
+    }
+};
+
+
+int main() {
+    MyLinkedList *myLinkedList = new MyLinkedList();
+    myLinkedList->addAtHead(1);
+    myLinkedList->addAtTail(3);
+    myLinkedList->addAtIndex(1, 2);
+    std::cout << myLinkedList->get(1) << std::endl;
+    myLinkedList->deleteAtIndex(1);
+    std::cout << myLinkedList->get(1) << std::endl;
+
+    delete myLinkedList;
+
+    return 0;
+}
+
+```
+
+# 4. 
