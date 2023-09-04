@@ -502,3 +502,125 @@ int main() {
 }
 
 ```
+# 5. 反转链表
+
+给你一个链表，两两交换其中相邻的节点，并返回交换后链表的头节点。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
+
+示例 1：
+
+输入：head = [1,2,3,4]
+输出：[2,1,4,3]
+
+示例 2：
+
+输入：head = []
+输出：[]
+
+示例 3：
+
+输入：head = [1]
+输出：[1]
+ 
+核心就是两两交换，这个循环就要确保一定后面两个要有， 然后正常链起来就可以了
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        // 1. 创建虚拟头结点
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+
+        // 2. 遍历链表，为了两两交换，后面两个都不能为空
+        // 0 -> 1 -> 2 -> 3 -> 4 
+        ListNode *cur = dummy;
+        while (cur->next != NULL && cur->next->next != NULL){
+            ListNode *tmp1 = cur->next;              // 1 -> 2 -> 3 -> 4 
+            ListNode *tmp2 = cur->next->next->next;  // 3 -> 4
+
+            cur->next = cur->next->next;             // 0 -> 2 -> 3 -> 4
+            cur->next->next = tmp1;                  //  0 -> 2 -> 1 -> 2 -> 3 -> 4 
+            cur->next->next->next = tmp2;               
+
+            cur = cur->next->next;                   // 0 -> 2 -> 1 -> 3 -> 4
+            
+        }
+        return dummy->next;
+    }
+};
+```
+
+# 6. 删除链表的倒数第 N 个结点
+https://leetcode.cn/problems/remove-nth-node-from-end-of-list/description/
+
+给你一个链表，删除链表的倒数第 n 个结点，并且返回链表的头结点。
+
+示例 1：
+
+输入：head = [1,2,3,4,5], n = 2
+
+输出：[1,2,3,5]
+
+示例 2：
+
+输入：head = [1], n = 1
+
+输出：[]
+
+示例 3：
+
+输入：head = [1,2], n = 1
+
+输出：[1]
+
+**思路:** 让快指针先走n步, 这个时候快慢指针间隔是n, 然后让慢指针一起走, 
+当n走到null时, 慢指针刚好是倒数第n-1个, 因为快慢间隔n, 快在NULL = 末尾 + 1
+如果是用虚拟头结点的话, 要让快指针先走n+1个单位
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+
+
+/*
+思路: 思路: 让快指针先走n步, 这个时候快慢指针间隔是n, 然后让慢指针一起走, 
+当n走到null时, 慢指针刚好是倒数第n-1个, 因为快慢间隔n, 快在NULL = 末尾 + 1
+如果是用虚拟头结点的话, 要让快指针先走n+1个单位
+*/
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        // 创建虚拟头结点, 快慢指针
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+        ListNode *fast = dummy;
+        ListNode *slow = dummy;
+
+        // 让快指针先走n+1
+        for (int i = 0; i < n+1; i++){
+            fast = fast->next; // 移动
+        }
+
+        // 快慢指针一起走直到快指针走到NULL
+        while (fast != NULL ){
+            fast = fast->next; 
+            slow = slow->next; 
+        }
+
+        // 这个时候slow指向要被删除的前一个, 走正常的删除操作
+        ListNode *tmp = slow->next;
+        slow->next = slow->next->next;
+        delete tmp;
+
+        
+        return dummy->next;
+    }
+};
+```
